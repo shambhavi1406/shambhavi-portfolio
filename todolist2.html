@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My To-Do List</title>
+    <style>
+        /* Reset default browser styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body styling with gradient background */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Main container for the app */
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+        }
+
+        /* Header styling */
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        /* Input section for adding new tasks */
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        #taskInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        #taskInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Add button styling */
+        #addButton {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        #addButton:hover {
+            background-color: #5568d3;
+        }
+
+        #addButton:active {
+            transform: scale(0.98);
+        }
+
+        /* Filter buttons section */
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            background-color: #f0f0f0;
+            border: 2px solid #e0e0e0;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .filter-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .filter-btn.active {
+            background-color: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Task list container */
+        #taskList {
+            list-style: none;
+        }
+
+        /* Individual task item styling */
+        .task-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease;
+        }
+
+        /* Slide in animation for new tasks */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .task-item:hover {
+            background-color: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        /* Checkbox styling */
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        /* Task text styling */
+        .task-text {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+            word-break: break-word;
+        }
+
+        /* Completed task styling */
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        /* Delete button styling */
+        .delete-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .delete-btn:hover {
+            background-color: #ee5a52;
+        }
+
+        /* Task counter styling */
+        .task-counter {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Clear completed button */
+        .clear-completed {
+            display: block;
+            margin: 20px auto 0;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .clear-completed:hover {
+            background-color: #5a6268;
+        }
+
+        /* Empty state message */
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+
+        /* Responsive design for mobile */
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .input-section {
+                flex-direction: column;
+            }
+
+            .filter-section {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <h1>📝 My To-Do List</h1>
+        <p class="subtitle">Stay organized and productive!</p>
+
+        <!-- Input section for adding new tasks -->
+        <div class="input-section">
+            <input 
+                type="text" 
+                id="taskInput" 
+                placeholder="What needs to be done?"
+                maxlength="200"
+            >
+            <button id="addButton">Add</button>
+        </div>
+
+        <!-- Filter buttons -->
+        <div class="filter-section">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+
+        <!-- Task list -->
+        <ul id="taskList"></ul>
+
+        <!-- Task counter -->
+        <div class="task-counter">
+            <span id="taskCount">0 tasks remaining</span>
+        </div>
+
+        <!-- Clear completed button -->
+        <button class="clear-completed" id="clearCompleted">Clear Completed</button>
+    </div>
+
+    <script>
+        // ========================================
+        // VARIABLES AND INITIALIZATION
+        // ========================================
+        
+        // Get references to DOM elements
+        const taskInput = document.getElementById('taskInput');
+        const addButton = document.getElementById('addButton');
+        const taskList = document.getElementById('taskList');
+        const taskCount = document.getElementById('taskCount');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const clearCompletedButton = document.getElementById('clearCompleted');
+
+        // Store tasks in memory (we'll sync with storage)
+        let tasks = [];
+        
+        // Current filter state
+        let currentFilter = 'all';
+
+        // ========================================
+        // STORAGE FUNCTIONS (IN-MEMORY)
+        // ========================================
+        
+        // Load tasks from memory when page loads
+        function loadTasks() {
+            // In a real browser environment, you would use localStorage:
+            // const savedTasks = localStorage.getItem('tasks');
+            // tasks = savedTasks ? JSON.parse(savedTasks) : [];
+            
+            // For this demo, we'll keep tasks in memory
+            tasks = tasks || [];
+            renderTasks();
+        }
+
+        // Save tasks to memory
+        function saveTasks() {
+            // In a real browser environment, you would use localStorage:
+            // localStorage.setItem('tasks', JSON.stringify(tasks));
+            
+            // For this demo, tasks are already in memory
+            renderTasks();
+        }
+
+        // ========================================
+        // TASK MANAGEMENT FUNCTIONS
+        // ========================================
+
+        // Add a new task
+        function addTask() {
+            const taskText = taskInput.value.trim();
+            
+            // Check if input is empty
+            if (taskText === '') {
+                alert('Please enter a task!');
+                return;
+            }
+
+            // Create new task object
+            const newTask = {
+                id: Date.now(), // Unique ID based on timestamp
+                text: taskText,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+
+            // Add to tasks array
+            tasks.push(newTask);
+
+            // Clear input field
+            taskInput.value = '';
+
+            // Save and render
+            saveTasks();
+
+            // Focus back on input for quick entry
+            taskInput.focus();
+        }
+
+        // Delete a task
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            saveTasks();
+        }
+
+        // Toggle task completion status
+        function toggleTask(id) {
+            const task = tasks.find(task => task.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+            }
+        }
+
+        // Clear all completed tasks
+        function clearCompleted() {
+            const completedCount = tasks.filter(task => task.completed).length;
+            
+            if (completedCount === 0) {
+                alert('No completed tasks to clear!');
+                return;
+            }
+
+            if (confirm(`Delete ${completedCount} completed task(s)?`)) {
+                tasks = tasks.filter(task => !task.completed);
+                saveTasks();
+            }
+        }
+
+        // ========================================
+        // RENDERING FUNCTIONS
+        // ========================================
+
+        // Render all tasks based on current filter
+        function renderTasks() {
+            // Clear the list
+            taskList.innerHTML = '';
+
+            // Filter tasks based on current filter
+            let filteredTasks = tasks;
+            if (currentFilter === 'active') {
+                filteredTasks = tasks.filter(task => !task.completed);
+            } else if (currentFilter === 'completed') {
+                filteredTasks = tasks.filter(task => task.completed);
+            }
+
+            // Show empty state if no tasks
+            if (filteredTasks.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.textContent = currentFilter === 'completed' 
+                    ? 'No completed tasks yet!' 
+                    : 'No tasks yet. Add one above!';
+                taskList.appendChild(emptyState);
+            }
+
+            // Create and append task elements
+            filteredTasks.forEach(task => {
+                const taskItem = createTaskElement(task);
+                taskList.appendChild(taskItem);
+            });
+
+            // Update counter
+            updateTaskCounter();
+        }
+
+        // Create a single task element
+        function createTaskElement(task) {
+            // Create list item
+            const li = document.createElement('li');
+            li.className = 'task-item';
+            if (task.completed) {
+                li.classList.add('completed');
+            }
+
+            // Create checkbox
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'task-checkbox';
+            checkbox.checked = task.completed;
+            checkbox.addEventListener('change', () => toggleTask(task.id));
+
+            // Create task text
+            const taskText = document.createElement('span');
+            taskText.className = 'task-text';
+            taskText.textContent = task.text;
+
+            // Create delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.addEventListener('click', () => deleteTask(task.id));
+
+            // Append all elements to list item
+            li.appendChild(checkbox);
+            li.appendChild(taskText);
+            li.appendChild(deleteBtn);
+
+            return li;
+        }
+
+        // Update the task counter
+        function updateTaskCounter() {
+            const activeTasks = tasks.filter(task => !task.completed).length;
+            taskCount.textContent = `${activeTasks} task${activeTasks !== 1 ? 's' : ''} remaining`;
+        }
+
+        // ========================================
+        // FILTER FUNCTIONS
+        // ========================================
+
+        // Set the active filter
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Update active button styling
+            filterButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === filter) {
+                    btn.classList.add('active');
+                }
+            });
+
+            renderTasks();
+        }
+
+        // ========================================
+        // EVENT LISTENERS
+        // ========================================
+
+        // Add task when button is clicked
+        addButton.addEventListener('click', addTask);
+
+        // Add task when Enter key is pressed
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // Filter button listeners
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setFilter(btn.dataset.filter);
+            });
+        });
+
+        // Clear completed button listener
+        clearCompletedButton.addEventListener('click', clearCompleted);
+
+        // ========================================
+        // INITIALIZE APP
+        // ========================================
+
+        // Load tasks when page loads
+        loadTasks();
+    </script>
+</body>
+</html>
